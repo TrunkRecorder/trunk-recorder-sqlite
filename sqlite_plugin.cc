@@ -14,10 +14,11 @@ private:
 
 public:
 
-
+std::map<long, std::string> unit_registration_map;
 int unit_registration(System *sys, long source_id) {
-    std::string short_name = sys->get_short_name();
-    //BOOST_LOG_TRIVIAL(info) << "EXAMPLE PLUGIN - unit_data_registration " << short_name;
+  std::string status = unit_registration_map[source_id];
+  if ((status == "") || (status == "unregistered")) {
+    unit_registration_map[source_id] = "registered";
              char *zErrMsg = 0;
    int rc;
 char sql[1024];
@@ -33,12 +34,14 @@ snprintf(sql, sizeof(sql), "INSERT INTO UNITS (SOURCEID, DATETIME, REGISTER) VAL
       fprintf(stderr, "[Unit Regirstration] SQL error: %s\n", zErrMsg);
       sqlite3_free(zErrMsg);
    } 
+  }
     return 0;
 }
 
 int unit_deregistration(System *sys, long source_id) { 
-    std::string short_name = sys->get_short_name();
-    //BOOST_LOG_TRIVIAL(info) << "EXAMPLE PLUGIN - unit_deregistration " << short_name;
+  std::string status = unit_registration_map[source_id];
+    if ((status == "") || (status == "registered")) {
+    unit_registration_map[source_id] = "unregistered";
              char *zErrMsg = 0;
    int rc;
 char sql[1024];
@@ -54,6 +57,7 @@ snprintf(sql, sizeof(sql), "INSERT INTO UNITS (SOURCEID, DATETIME, REGISTER) VAL
       fprintf(stderr, "[Unit Deregistration] SQL error: %s\n", zErrMsg);
       sqlite3_free(zErrMsg);
    } 
+    }
     return 0;
 }  
 int unit_acknowledge_response(System *sys, long source_id) { 
@@ -62,9 +66,10 @@ int unit_acknowledge_response(System *sys, long source_id) {
     return 0;
 }
 
+std::map<long, long> unit_group_affiliation_map;
 int unit_group_affiliation(System *sys, long source_id, long talkgroup_num) {
-    std::string short_name = sys->get_short_name();
-    //BOOST_LOG_TRIVIAL(info) << "EXAMPLE PLUGIN - unit_group_affiliation " << short_name;
+  if (unit_group_affiliation_map[source_id] != talkgroup_num) {
+    unit_group_affiliation_map[source_id] = talkgroup_num;
          char *zErrMsg = 0;
    int rc;
 char sql[1024];
@@ -80,6 +85,7 @@ snprintf(sql, sizeof(sql), "INSERT INTO AFFILIATIONS (SOURCEID, DATETIME, TGNUM)
       fprintf(stderr, "[Unit Affiliation] SQL error: %s\n", zErrMsg);
       sqlite3_free(zErrMsg);
    } 
+  }
     return 0;
 }
 
